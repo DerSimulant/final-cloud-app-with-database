@@ -166,3 +166,5 @@ class Submission(models.Model):
 
     # Many-to-Many relationship with choices
     choices = models.ManyToManyField(Choice)
+
+    score = models.IntegerField()
