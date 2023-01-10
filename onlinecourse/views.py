@@ -8,6 +8,8 @@ from django.urls import reverse
 from django.views import generic
 from django.contrib.auth import login, logout, authenticate
 import logging
+from django.db.models import Sum
+
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 # Create your views here.
@@ -30,6 +32,7 @@ def submit(request, course_id):
     for choice_id in choices:
         choice = Choice.objects.get(pk=int(choice_id))
         submission.choices.add(choice)
+        submission.save()
     
     # Redirect to the show_exam_result view with the submission id
     #return redirect('show_exam_result', submission_id=submission.id)
@@ -160,19 +163,26 @@ def show_exam_result(request, course_id, submission_id):
     
     # Get the selected choice IDs
     selected_ids = submission.choices.values_list('id', flat=True)
-    
+    selected_choices = Choice.objects.filter(id__in=selected_ids)
+    #total = Question.objects.filter(course=course_id).aggregate(Sum('grade_point'))
+    total_grade_points = Question.objects.filter(course=course_id).aggregate(Sum('grade_point'))
+    total = total_grade_points.get('grade_point__sum')
     # Calculate the total score
-    total_score = 0
-    for question in course.question_set.all():
-        for choice in question.choice_set.all():
-            if choice.id in selected_ids and choice.is_correct:
-                total_score += choice.grade
-    
+   # total_score = 0
+    #for question in course.question_set.all():
+    #    for choice in question.choice_set.all():
+      #      if choice.id in selected_ids and choice.is_correct:
+       #         total_score += choice.grade
+    #
+
+    total_score = submission.calculate_score()
     # Add the course, selected_ids, and total_score to context for rendering HTML page
     context = {
         'course': course,
         'selected_ids': selected_ids,
         'total_score': total_score,
+        'total': total,
+        'selected_choices': selected_choices
     }
     return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
 
