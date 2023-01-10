@@ -114,22 +114,22 @@ class Question(models.Model):
     # Other fields and methods you would like to include
     # ...
 
-    def is_get_score(self, selected_choice_ids):
-        """Evaluate if the question was answered correctly by comparing the selected choice ids with correct choices in the question."""
-        correct_choice_ids = [choice.id for choice in self.choices.all() if choice.is_correct]
-        return set(selected_choice_ids) == set(correct_choice_ids)
+    #def is_get_score(self, selected_choice_ids):
+       # """Evaluate if the question was answered correctly by comparing the selected choice ids with correct choices in the question."""
+      #  correct_choice_ids = [choice.id for choice in self.choices.all() if choice.is_correct]
+        #return set(selected_choice_ids) == set(correct_choice_ids)
     # Foreign key to lesson
     # question text
     # question grade/mark
 
     # <HINT> A sample model method to calculate if learner get the score of the question
     #def is_get_score(self, selected_ids):
-    #    all_answers = self.choice_set.filter(is_correct=True).count()
-    #    selected_correct = self.choice_set.filter(is_correct=True, id__in=selected_ids).count()
-    #    if all_answers == selected_correct:
-    #        return True
-    #    else:
-    #        return False
+        #all_answers = self.choice_set.filter(is_correct=True).count()
+        #selected_correct = self.choice_set.filter(is_correct=True, id__in=selected_ids).count()
+        #if all_answers == selected_correct:
+          #  return True
+        #else:
+            #return False
 
 
 #  <HINT> Create a Choice Model with:
@@ -168,3 +168,12 @@ class Submission(models.Model):
     choices = models.ManyToManyField(Choice)
 
     score = models.IntegerField(default=0)
+
+    def calculate_score(self):
+        total_score = 0
+        for choice in self.choices.all():
+            question = choice.question
+            if choice.is_correct:
+                total_score += question.grade_point
+        self.score = total_score
+        self.save()
