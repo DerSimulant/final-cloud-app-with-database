@@ -165,9 +165,12 @@ def show_exam_result(request, course_id, submission_id):
     # Get the course object and submission object
     course = Course.objects.get(pk=course_id)
     submission = Submission.objects.get(pk=submission_id)
-    total_correct = submission.score_breakdown['total_correct']
-    total_incorrect = submission.score_breakdown['total_incorrect']
-    percentage_correct = submission.score_breakdown['percentage_correct']
+    submission.calculate_score()
+    submission.calculate_all_question_scores()
+    total_correct = submission.total_correct
+    total_incorrect = submission.total_incorrect
+    percentage_correct = submission.percentage_correct
+    total_score = submission.total_score
 
     
         
@@ -185,7 +188,7 @@ def show_exam_result(request, course_id, submission_id):
        #         total_score += choice.grade
     #
 
-    total_score = submission.calculate_score()
+    
     # Add the course, selected_ids, and total_score to context for rendering HTML page
     context = {
         'course': course,
