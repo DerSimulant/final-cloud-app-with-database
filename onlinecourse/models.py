@@ -113,7 +113,8 @@ class Question(models.Model):
 
     # Other fields and methods you would like to include
     # ...
-
+    def __str__(self):
+        return self.text
     #def is_get_score(self, selected_choice_ids):
        # """Evaluate if the question was answered correctly by comparing the selected choice ids with correct choices in the question."""
       #  correct_choice_ids = [choice.id for choice in self.choices.all() if choice.is_correct]
@@ -150,7 +151,8 @@ class Choice(models.Model):
 
     # Other fields and methods you would like to include
     # ...
-
+    def __str__(self):
+        return self.text
 # <HINT> The submission model
 # One enrollment could have multiple submission
 # One submission could have multiple choices
