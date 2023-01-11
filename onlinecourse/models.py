@@ -187,31 +187,9 @@ class Submission(models.Model):
     total_not_attempted = models.IntegerField(default=0)
     percentage_correct = models.FloatField(default=0.0)
 
-    def calculate_score(self):
-        total_score = 0
-        total_correct = 0
-        total_incorrect = 0
-        total_attempted = 0
-        total_not_attempted = 0
-        for choice in self.choices.all():
-            question = choice.question
-            if choice.is_correct:
-                total_score += question.grade_point
-                total_correct += 1
-                total_attempted += 1
-            else:
-                total_incorrect += 1
-                total_attempted += 1
-
+    
         
-        self.total_score = total_score
-        self.total_correct = total_correct
-        self.total_incorrect = total_incorrect
-        self.total_attempted = total_attempted
-        self.total_not_attempted = total_not_attempted
-        self.percentage_correct =  total_correct / total_attempted * 100 if total_attempted != 0 else 1
-        
-        self.save()
+      
         #return total_score
     
     #def calculate_all_question_scores(request):
