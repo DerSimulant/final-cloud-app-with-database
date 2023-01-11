@@ -8,6 +8,7 @@ except Exception:
 
 from django.conf import settings
 import uuid
+from django_extensions.db.fields import DictionaryField
 
 
 # Instructor model
@@ -125,12 +126,21 @@ class Question(models.Model):
 
     # <HINT> A sample model method to calculate if learner get the score of the question
     #def is_get_score(self, selected_ids):
-        #all_answers = self.choice_set.filter(is_correct=True).count()
-        #selected_correct = self.choice_set.filter(is_correct=True, id__in=selected_ids).count()
-        #if all_answers == selected_correct:
-          #  return True
-        #else:
-            #return False
+       # all_answers = self.choice_set.filter(is_correct=True).count()
+       # selected_correct = self.choice_set.filter(is_correct=True, id__in=selected_ids).count()
+       # if all_answers == selected_correct:
+        #    return True
+       # else:
+       #     return False
+
+     #def calculate_score(self):
+       # total_score = 0
+       # for choice in self.choices.all():
+        #    question = choice.question
+        #    if choice.is_correct:
+         #       total_score += question.grade_point
+        #self.score = total_score
+        #self.save()
 
 
 #  <HINT> Create a Choice Model with:
@@ -169,13 +179,38 @@ class Submission(models.Model):
     # Many-to-Many relationship with choices
     choices = models.ManyToManyField(Choice)
 
-    score = models.IntegerField(default=0)
+    total_score = models.IntegerField(default=0)
+    total_score_breakdown = DictionaryField(default=dict)
 
     def calculate_score(self):
         total_score = 0
+        total_correct = 0
+        total_incorrect = 0
+        total_attempted = 0
+        total_not_attempted = 0
         for choice in self.choices.all():
             question = choice.question
             if choice.is_correct:
                 total_score += question.grade_point
-        self.score = total_score
+                total_correct += 1
+                total_attempted += 1
+            else:
+                total_incorrect += 1
+                total_attempted += 1
+
+        self.total_score = total_score
+        self.total_score_breakdown = {
+            'total_correct': total_correct,
+            'total_incorrect': total_incorrect,
+            'total_attempted': total_attempted,
+            'total_not_attempted': total_not_attempted,
+            'percentage_correct': total_correct / total_attempted * 100 if total_attempted != 0 else 0
+        }
         self.save()
+
+    
+        def calculate_all_question_scores(request):
+            questions = Question.objects.all()
+            for question in questions:
+                question.calculate_score()
+            return HttpResponse("Scores for all questions have been calculated and updated.")
