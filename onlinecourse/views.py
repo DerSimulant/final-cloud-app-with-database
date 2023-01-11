@@ -148,12 +148,21 @@ def submit(request, course_id):
     
     # Collect the selected choices from the request object
     choices = request.POST.getlist('choice')
-    submission.calculate_score()
+    
 # Add each selected choice object to the submission object
-    #for choice_id in choices:
-      #  choice = Choice.objects.get(pk=int(choice_id))
-       # submission.choices.add(choice)
-       # submission.save()
+    for choice_id in choices:
+        choice = Choice.objects.get(pk=int(choice_id))
+        submission.choices.add(choice)
+        if choice.is_correct:
+            submission.total_score += question.grade_point
+            submission.total_correct += 1
+            submission.total_attempted += 1
+        else:
+            submission.total_incorrect += 1
+            submission.total_attempted += 1
+    #percentage_correct =  total_correct / total_attempted * 100 if total_attempted != 0 else 1
+    submission.save()
+    
     
     # Redirect to the show_exam_result view with the submission id
     #return redirect('show_exam_result', submission_id=submission.id)
@@ -165,8 +174,8 @@ def show_exam_result(request, course_id, submission_id):
     # Get the course object and submission object
     course = Course.objects.get(pk=course_id)
     submission = Submission.objects.get(pk=submission_id)
-    submission.calculate_score()
-    submission.calculate_all_question_scores()
+    #submission.calculate_score()
+    #submission.calculate_all_question_scores()
     total_correct = submission.total_correct
     total_incorrect = submission.total_incorrect
     percentage_correct = submission.percentage_correct
