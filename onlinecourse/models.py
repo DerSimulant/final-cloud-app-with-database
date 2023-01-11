@@ -8,7 +8,7 @@ except Exception:
 
 from django.conf import settings
 import uuid
-from django_extensions.db.fields import DictionaryField
+
 
 
 # Instructor model
@@ -180,7 +180,12 @@ class Submission(models.Model):
     choices = models.ManyToManyField(Choice)
 
     total_score = models.IntegerField(default=0)
-    total_score_breakdown = DictionaryField(default=dict)
+    
+    total_correct = models.IntegerField(default=0)
+    total_incorrect = models.IntegerField(default=0)
+    total_attempted = models.IntegerField(default=0)
+    total_not_attempted = models.IntegerField(default=0)
+    percentage_correct = models.FloatField(default=0.0)
 
     def calculate_score(self):
         total_score = 0
@@ -198,19 +203,19 @@ class Submission(models.Model):
                 total_incorrect += 1
                 total_attempted += 1
 
+        
         self.total_score = total_score
-        self.total_score_breakdown = {
-            'total_correct': total_correct,
-            'total_incorrect': total_incorrect,
-            'total_attempted': total_attempted,
-            'total_not_attempted': total_not_attempted,
-            'percentage_correct': total_correct / total_attempted * 100 if total_attempted != 0 else 0
-        }
+        self.total_correct = total_correct
+        self.total_incorrect = total_incorrect
+        self.total_attempted = total_attempted
+        self.total_not_attempted = total_not_attempted
+        self.percentage_correct =  total_correct / total_attempted * 100 if total_attempted != 0 else 1
+        
         self.save()
-
+        #return total_score
     
-        def calculate_all_question_scores(request):
-            questions = Question.objects.all()
-            for question in questions:
-                question.calculate_score()
-            return HttpResponse("Scores for all questions have been calculated and updated.")
+    #def calculate_all_question_scores(request):
+     #   questions = Question.objects.all()
+      #  for question in questions:
+       #     question.calculate_score()
+       # return overall_score
