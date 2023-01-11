@@ -53,7 +53,7 @@
             <!--HINT Display exam results-->
             <h2>{{ course.name }}  </h2>
             Total points: {{ total_score }} / {{ total }} 
-        
+            Percentage correct: {{ percentage_correct}}
             {% for  question in course.question_set.all %}
         
             <table class='table table-bordered table-striped' style='width:500px; margin:auto'>                          
