@@ -14,29 +14,7 @@ from django.db.models import Sum
 logger = logging.getLogger(__name__)
 # Create your views here.
 
-def submit(request, course_id):
-    # Get the current user and the course object
-    user = request.user
-    course = get_object_or_404(Course, pk=course_id)
-    
-    # Get the enrollment object
-    enrollment = Enrollment.objects.get(user=user, course=course)
-    
-    # Create a new submission object
-    submission = Submission.objects.create(enrollment=enrollment)
-    
-    # Collect the selected choices from the request object
-    choices = request.POST.getlist('choice')
 
-# Add each selected choice object to the submission object
-    for choice_id in choices:
-        choice = Choice.objects.get(pk=int(choice_id))
-        submission.choices.add(choice)
-        submission.save()
-    
-    # Redirect to the show_exam_result view with the submission id
-    #return redirect('show_exam_result', submission_id=submission.id)
-    return HttpResponseRedirect(reverse(viewname='onlinecourse:show_exam_result', args=(course.id,submission.id)))
 
 def registration_request(request):
     context = {}
@@ -156,11 +134,43 @@ def enroll(request, course_id):
         # For each selected choice, check if it is a correct answer or not
         # Calculate the total score
 #def show_exam_result(request, course_id, submission_id):
+
+def submit(request, course_id):
+    # Get the current user and the course object
+    user = request.user
+    course = get_object_or_404(Course, pk=course_id)
+    
+    # Get the enrollment object
+    enrollment = Enrollment.objects.get(user=user, course=course)
+    
+    # Create a new submission object
+    submission = Submission.objects.create(enrollment=enrollment)
+    
+    # Collect the selected choices from the request object
+    choices = request.POST.getlist('choice')
+    submission.calculate_score()
+# Add each selected choice object to the submission object
+    #for choice_id in choices:
+      #  choice = Choice.objects.get(pk=int(choice_id))
+       # submission.choices.add(choice)
+       # submission.save()
+    
+    # Redirect to the show_exam_result view with the submission id
+    #return redirect('show_exam_result', submission_id=submission.id)
+    return HttpResponseRedirect(reverse(viewname='onlinecourse:show_exam_result', args=(course.id,submission.id)))
+
+
+
 def show_exam_result(request, course_id, submission_id):
     # Get the course object and submission object
     course = Course.objects.get(pk=course_id)
     submission = Submission.objects.get(pk=submission_id)
+    total_correct = submission.score_breakdown['total_correct']
+    total_incorrect = submission.score_breakdown['total_incorrect']
+    percentage_correct = submission.score_breakdown['percentage_correct']
+
     
+        
     # Get the selected choice IDs
     selected_ids = submission.choices.values_list('id', flat=True)
     selected_choices = Choice.objects.filter(id__in=selected_ids)
@@ -182,7 +192,10 @@ def show_exam_result(request, course_id, submission_id):
         'selected_ids': selected_ids,
         'total_score': total_score,
         'total': total,
-        'selected_choices': selected_choices
+        'selected_choices': selected_choices,
+        'total_correct': total_correct,
+        'total_incorrect': total_incorrect,
+        'percentage_correct': percentage_correct,
     }
     return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
 
