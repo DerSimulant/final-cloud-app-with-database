@@ -66,14 +66,16 @@
                     {% for question in course.question_set.all %}
                     <h4>{{ question.text }}</h4>
                     {% for choice in question.choice_set.all %}
-                        <input type="checkbox" name="{{ choice.id }}" value="{{ choice.id }}"> {{ choice.text }}<br>
+                        <input type="checkbox" name="choice " value="{{ choice.id }}"> {{ choice.text }}<br>
                     
         
                             {% csrf_token %}
                             {% endfor %}
                             {% endfor %}
-                <input class="btn btn-success btn-block" type="submit" value="Submit">
-        </form> 
+                            <input class="btn btn-success btn-block" type="submit" value="Submit">
+                        </form> 
+                
+            
             </div>
             
         </div>
