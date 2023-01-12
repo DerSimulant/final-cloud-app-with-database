@@ -7,6 +7,7 @@ except Exception:
     sys.exit()
 
 from django.conf import settings
+
 import uuid
 
 
@@ -178,9 +179,11 @@ class Submission(models.Model):
 
     # Many-to-Many relationship with choices
     choices = models.ManyToManyField(Choice)
+    # new field for correct choices
+    correct_choices = models.IntegerField(default=1)
 
     total_score = models.IntegerField(default=0)
-    
+    selected_choices = models.BooleanField(default=False)
     total_correct = models.IntegerField(default=0)
     total_incorrect = models.IntegerField(default=0)
     total_attempted = models.IntegerField(default=0)
