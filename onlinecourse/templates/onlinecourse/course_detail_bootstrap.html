@@ -66,6 +66,7 @@
                     {% for question in course.question_set.all %}
                     <h4>{{ question.text }}</h4>
                     {% for choice in question.choice_set.all %}
+                    
                         <input type="checkbox" name="choice " value="{{ choice.id }}"> {{ choice.text }}<br>
                     
         
