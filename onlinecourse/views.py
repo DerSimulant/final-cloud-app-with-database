@@ -154,39 +154,31 @@ def submit(request, course_id):
     choices = Choice.objects.filter(pk__in=choices)
     print("Matched choices:", choices)
     submission.choices.add(*choices)
-    
+    print("added Choices:", choices)
     # Initialize the number of correct choices
-    correct_choices = 5
+    correct_choices = 0
+    incorrect_choices = 0
 
     # Iterate over the selected choices
     for choice in choices:
         if choice.is_correct:
             correct_choices += 1
+        else: 
+            incorrect_choices +=1
 
-    # Add each selected choice object to the submission object
-    #for choice_id in choices:
-      #  choice = Choice.objects.get(pk=int(choice_id))
-       # if choice.is_correct:
-       #     correct_choices.append(True)
-        #else:
-           # correct_choices.append(False)
+   
 
-# Add each selected choice object to the submission object
-    #for choice_id in choices:
-       # choice = Choice.objects.get(pk=int(choice_id))
-        #submission.selected_choices.add(choice.is_correct)
-        #if choice.is_correct:
-           # submission.total_score += question.grade_point
-            #submission.total_correct += 1
-            #submission.total_attempted += 1
-        #else:
-            #submission.total_incorrect += 1
-            #submission.total_attempted += 1
+
     #percentage_correct =  total_correct / total_attempted * 100 if total_attempted != 0 else 1
     # Set the correct_choices field of the submission object
+    submission.total_incorrect = incorrect_choices
     submission.correct_choices = correct_choices
-    submission.save()
+    print('incorrect',submission.total_incorrect)
     
+    submission.save()
+   
+    
+
     
     # Redirect to the show_exam_result view with the submission id
     #return redirect('show_exam_result', submission_id=submission.id)
@@ -213,6 +205,9 @@ def show_exam_result(request, course_id, submission_id):
     #total = Question.objects.filter(course=course_id).aggregate(Sum('grade_point'))
     total_grade_points = Question.objects.filter(course=course_id).aggregate(Sum('grade_point'))
     total = total_grade_points.get('grade_point__sum')
+    total_correct = (correct_choices - total_incorrect)*10
+    percentage_correct = total_correct/ total *100
+
     # Calculate the total score
    # total_score = 0
     #for question in course.question_set.all():
