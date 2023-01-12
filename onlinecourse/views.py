@@ -117,14 +117,14 @@ def enroll(request, course_id):
 
 
 # <HINT> A example method to collect the selected choices from the exam form from the request object
-#def extract_answers(request):
-#    submitted_anwsers = []
-#    for key in request.POST:
-#        if key.startswith('choice'):
-#            value = request.POST[key]
-#            choice_id = int(value)
-#            submitted_anwsers.append(choice_id)
-#    return submitted_anwsers
+def extract_answers(request):
+    submitted_anwsers = []
+    for key in request.POST:
+        if key.startswith('choice'):
+            value = request.POST[key]
+            choice_id = int(value)
+            submitted_anwsers.append(choice_id)
+    return submitted_anwsers
 
 
 # <HINT> Create an exam result view to check if learner passed exam and show their question results and result for each question,
@@ -136,31 +136,55 @@ def enroll(request, course_id):
 #def show_exam_result(request, course_id, submission_id):
 
 def submit(request, course_id):
-    # Get the current user and the course object
+        # Get the current user and the course object
     user = request.user
     course = get_object_or_404(Course, pk=course_id)
-    
+
     # Get the enrollment object
     enrollment = Enrollment.objects.get(user=user, course=course)
-    
+
     # Create a new submission object
     submission = Submission.objects.create(enrollment=enrollment)
-    
+    print(request.POST)
     # Collect the selected choices from the request object
-    choices = request.POST.getlist('choice')
+    choices = request.POST.getlist("choice ")
+    choices = [int(i) for i in choices]
+    print("Selected choices:", choices)
+    # Add each selected choice object to the submission object
+    choices = Choice.objects.filter(pk__in=choices)
+    print("Matched choices:", choices)
+    submission.choices.add(*choices)
     
-# Add each selected choice object to the submission object
-    for choice_id in choices:
-        choice = Choice.objects.get(pk=int(choice_id))
-        submission.choices.add(choice)
+    # Initialize the number of correct choices
+    correct_choices = 5
+
+    # Iterate over the selected choices
+    for choice in choices:
         if choice.is_correct:
-            submission.total_score += question.grade_point
-            submission.total_correct += 1
-            submission.total_attempted += 1
-        else:
-            submission.total_incorrect += 1
-            submission.total_attempted += 1
+            correct_choices += 1
+
+    # Add each selected choice object to the submission object
+    #for choice_id in choices:
+      #  choice = Choice.objects.get(pk=int(choice_id))
+       # if choice.is_correct:
+       #     correct_choices.append(True)
+        #else:
+           # correct_choices.append(False)
+
+# Add each selected choice object to the submission object
+    #for choice_id in choices:
+       # choice = Choice.objects.get(pk=int(choice_id))
+        #submission.selected_choices.add(choice.is_correct)
+        #if choice.is_correct:
+           # submission.total_score += question.grade_point
+            #submission.total_correct += 1
+            #submission.total_attempted += 1
+        #else:
+            #submission.total_incorrect += 1
+            #submission.total_attempted += 1
     #percentage_correct =  total_correct / total_attempted * 100 if total_attempted != 0 else 1
+    # Set the correct_choices field of the submission object
+    submission.correct_choices = correct_choices
     submission.save()
     
     
@@ -180,7 +204,7 @@ def show_exam_result(request, course_id, submission_id):
     total_incorrect = submission.total_incorrect
     percentage_correct = submission.percentage_correct
     total_score = submission.total_score
-
+    correct_choices = submission.correct_choices
     
         
     # Get the selected choice IDs
@@ -208,6 +232,7 @@ def show_exam_result(request, course_id, submission_id):
         'total_correct': total_correct,
         'total_incorrect': total_incorrect,
         'percentage_correct': percentage_correct,
+        'correct_choices': correct_choices,
     }
     return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
 
