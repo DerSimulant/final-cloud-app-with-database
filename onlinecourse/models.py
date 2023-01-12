@@ -188,15 +188,30 @@ class Submission(models.Model):
     total_incorrect = models.IntegerField(default=0)
     total_attempted = models.IntegerField(default=0)
     total_not_attempted = models.IntegerField(default=0)
-    percentage_correct = models.FloatField(default=0.0)
+    percentage_correct = models.IntegerField(default=0)
 
     
-        
+    def calculate_score(question_ids):
+        total_score = 0
+        for question_id in question_ids:
+            question = get_object_or_404(Question, pk=question_id)
+            choices = Choice.objects.filter(question=question)
+            score = 0
+            total_correct_choices = 0
+            total_submitted_choices = 0
+            for choice in choices:
+                if choice.is_correct:
+                    total_correct_choices += 1
+                total_submitted_choices += 1
+
+            if total_submitted_choices != 0:
+                if total_correct_choices == total_submitted_choices:
+                    score = question.grade_point
+                else:
+                    score = (total_correct_choices / total_submitted_choices) * question.grade_point
+            else:
+                score = 0
+            total_score += score
+        return total_score
       
-        #return total_score
-    
-    #def calculate_all_question_scores(request):
-     #   questions = Question.objects.all()
-      #  for question in questions:
-       #     question.calculate_score()
-       # return overall_score
+        
